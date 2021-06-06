@@ -16,11 +16,68 @@ class KubaGame:
         :param player1: Receives a tuple in the form of ('Player 1 name', 'Player 1 marble color')
         :param player2: Receives a tuple in the form of ('Player 2 name', 'Player 2 marble color')
         """
+        board = {}
+
         self._player1_name = player1[0]
         self._player1_color = player1[1]
         self._player2_name = player2[0]
         self._player2_color = player2[1]
-        self._board = Board()
+        self._board = board
+
+        for row in range(0, 7):
+            for column in range(0, 7):
+                coordinate = (int(row), int(column))
+                board[coordinate] = 'X'
+
+        # set white marble initial positions
+        board[0, 0] = 'W'
+        board[0, 1] = 'W'
+        board[1, 0] = 'W'
+        board[1, 1] = 'W'
+
+        board[5, 5] = 'W'
+        board[5, 6] = 'W'
+        board[6, 5] = 'W'
+        board[6, 6] = 'W'
+
+        # set black marble initial positions
+        board[0, 5] = 'B'
+        board[0, 6] = 'B'
+        board[1, 5] = 'B'
+        board[1, 6] = 'B'
+
+        board[5, 0] = 'B'
+        board[5, 1] = 'B'
+        board[6, 0] = 'B'
+        board[6, 1] = 'B'
+
+        # set red marble initial positions
+        board[1, 3] = 'R'
+        board[2, 2] = 'R'
+        board[2, 3] = 'R'
+        board[2, 4] = 'R'
+        board[3, 1] = 'R'
+        board[3, 2] = 'R'
+        board[3, 3] = 'R'
+        board[3, 4] = 'R'
+        board[3, 5] = 'R'
+        board[4, 2] = 'R'
+        board[4, 3] = 'R'
+        board[4, 4] = 'R'
+        board[5, 3] = 'R'
+
+
+    def display_board_coordinates(self):
+        """
+        Displays board with current marble positions.
+        Coordinates are also displayed.
+        :return: Print out of current game board.
+        """
+
+        for i, key in enumerate(self._board):
+            print(key, self._board[key], end = " ")
+            if i % 7 == 6:
+                print("\n", end="")
 
     def get_current_turn(self):
         """
@@ -71,34 +128,16 @@ class KubaGame:
         """
         pass
 
-
-class Board:
-    """
-    This class represents a board for the Kuba game.  It creates a new Kuba board instance, tracks
-    and returns marble positions, tracks score, and displays a visual representation of the board.
-    This class also interacts with and provides board information to the KubaGame class.
-    """
-
-    def __init__(self):
-        """
-        This method creates an instance of the Board object.
-        """
-        self._board = self.build_board()
-        pass
-
-    def build_board(self):
-        """
-        Builds dictionary of board coordinates and starting marble positions.
-        :return: board
-        """
-        pass
-
     def display_board(self):
         """
         Displays board with current marble positions.
         :return: Print out of current game board.
         """
-        pass
+
+        for i, key in enumerate(self._board):
+            print(self._board[key], end=" ")
+            if i % 7 == 6:
+                print("\n", end="")
 
     def get_board(self):
         """
@@ -110,5 +149,6 @@ class Board:
 
 if __name__ == '__main__':
     game = KubaGame(('Cas', 'W'), ('Not Cas', 'B'))
-    game._board.display_board()
+    game.display_board()
+    game.display_board_coordinates()
     pass
