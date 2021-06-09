@@ -100,7 +100,7 @@ class KubaGame:
 
     def display_board_coordinates(self):
         """
-        Displays board with coordinates and current marble positions
+        Displays board with coordinates and current marble positions.
         """
         for item, key in enumerate(self._board):
             print(key, self._board[key], end=" ")
@@ -147,14 +147,15 @@ class KubaGame:
         if playername != self._turn and self._turn is not None:
             valid_flag = False
 
+        # Set valid_flag to 'False' if parameter coordinates do not exist in board
+        if coordinates not in self._board:
+            valid_flag = False
+            return valid_flag  # return valid_flag to prevent KeyError
+
         # Set valid_flag to 'False' if marble does not belong to respective player
         if playername == self._player1_name and self._board[coordinates] != self._player1_color:
             valid_flag = False
         if playername == self._player2_name and self._board[coordinates] != self._player2_color:
-            valid_flag = False
-
-        # Set valid_flag to 'False' if parameter coordinates do not exist in board
-        if coordinates not in self._board:
             valid_flag = False
 
         # Set valid_flag to 'False' if movement is to coordinates that do not exist on board
@@ -182,10 +183,6 @@ class KubaGame:
         # create deep copies for validations
         self._previous_board = self._interim_board
         self._interim_board = copy.deepcopy(self._board)
-
-        # **** DELETE: FOR TESTING PURPOSES ONLY ****
-        print()
-        self.display_board()
 
         # set current_coordinates and current_marble to parameter coordinates
         current_coordinates = coordinates
@@ -253,10 +250,10 @@ class KubaGame:
             self._player2_captured += 1
 
         # if player has 7 red marbles then mark player as winner
-        if self._player1_captured == 7:
-            self._winner = playername
-        if self._player2_captured == 7:
-            self._winner = playername
+        if self._player1_captured >= 7:
+            self._winner = self._player1_name
+        if self._player2_captured >= 7:
+            self._winner = self._player2_name
 
         # if the opponent has no more marbles then mark player as winner
         if self._player1_color not in self._board.values():
@@ -295,20 +292,10 @@ class KubaGame:
         if player2_available_moves == 0:
             self._winner = self._player1_color
 
-        # FOR TESTING PURPOSES
-        print()
-        self.display_board()
-        print("Player name: ", playername)
-        print("Current coordinates: ", current_coordinates)
-        print("Direction: ", direction)
-        print("Direction coordinates: ", direction_coordinates)
-        print("Current marble: ", current_marble)
-        print("Next coordinates: ", next_coordinates)
-        print("Next marble: ", next_marble)
-        print("Player 1 captured marbles: ", self._player1_captured)
-        print("Player 2 captured marbles: ", self._player2_captured)
-        print("Player 1 available moves: ", player1_available_moves)
-        print("Player 2 available moves: ", player2_available_moves)
+        if playername == self._player1_name:
+            self._turn = self._player2_name
+        if playername == self._player2_name:
+            self._turn = self._player1_name
 
         return valid_flag
 
@@ -316,6 +303,10 @@ class KubaGame:
         """
         Returns the name of the winning player.
         """
+        if self._player1_captured >= 7:
+            self._winner = self._player1_name
+        if self._player2_captured >= 7:
+            self._winner = self._player2_name
         return self._winner
 
     def get_captured(self, playername):
@@ -359,56 +350,4 @@ class KubaGame:
 
 
 if __name__ == '__main__':
-    game = KubaGame(('Chim', 'W'), ('Dashi', 'B'))
-    print(game.make_move('Dashi', (0, 6), 'B'))
-
-    # game.display_board()
-    game.display_board_coordinates()
-
-    # need to test:
-    # 1) if opponent has no more marbles then player is winner
-    # 2) if player has 7 red marbles then player is winner
-    # 3) if the opponent's marbles are surrounded and cannot move in any direction then player wins
-
-    # # tests if player can capture a red marble
-    # print(game.make_move('Chim', (0, 1), 'B'))
-    # print(game.make_move('Dashi', (6, 1), 'F'))
-    # print(game.make_move('Chim', (1, 1), 'B'))
-    # print(game.make_move('Dashi', (5, 0), 'R'))
-    # print(game.make_move('Chim', (2, 1), 'B'))
-    # print(game.make_move('Dashi', (6, 0), 'F'))
-    # print(game.make_move('Chim', (3, 1), 'B'))
-    # print(game.make_move('Dashi', (5, 0), 'R'))
-    # print(game.make_move('Chim', (4, 1), 'B'))
-    # print("Marbles captured by Chim: ", game.get_captured("Chim"))
-    # print("Marbles captured by Dashi: ", game.get_captured("Dashi"))
-
-    # # tests if player can move twice in a row - should return False
-    # print(game.make_move('Chim', (0, 1), 'B'))
-    # print(game.make_move('Chim', (1, 5), 'B'))
-
-    # # tests if player can undo opponent's move - should return False
-    # print(game.make_move('Chim', (0, 1), 'B'))
-    # print(game.make_move('Dashi', (6, 1), 'F'))
-    # print(game.make_move('Chim', (1, 1), 'B'))
-    # print(game.make_move('Dashi', (6, 1), 'F'))
-
-    # tests if able to push own marble off board - should return False
-    # print(game.make_move('Chim', (5, 5), 'B'))
-
-    # # test if attempt to move >6 consecutive marbles sets valid_flag to False
-    # game._board[(0, 3)] = 'B'
-    # game._board[(6, 3)] = 'W'
-    # game.make_move('Chim', (0, 1), 'B')
-    # game.make_move('Chim', (0, 3), 'B')
-
-    # print(game.get_marble_count())
-    # print(game.get_current_turn())
-    # print(game.get_captured('Chim'))
-    # print(game.get_captured('Dashi'))
-    # print(game.get_captured('Not a real name'))  # returns 'Invalid player name'
-    # print(game.get_winner())
-
-    # print(game.get_marble((0, 0)))  # returns 'W'
-    # print(game.get_marble((3, 0)))  # returns 'X'
-    # print(game.get_marble((9, 0)))  # returns 'Invalid coordinates'
+    pass
