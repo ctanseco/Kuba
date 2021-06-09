@@ -15,9 +15,8 @@ class KubaGame:
 
     def __init__(self, player1, player2):
         """
-        Initializes an instance of the KubaGame class, creates players, and creates the game board.
-        :param player1: Receives a tuple in the form of ('Player 1 name', 'Player 1 marble color')
-        :param player2: Receives a tuple in the form of ('Player 2 name', 'Player 2 marble color')
+        Initializes an instance of the KubaGame class, creates players, creates the game board, creates
+        data members to determine turn and winner.
         """
         # player 1 data members
         self._player1_name = player1[0]
@@ -82,7 +81,9 @@ class KubaGame:
         board[5, 3] = 'R'
 
     def get_player_color(self, playername):
-        """DOCSTRING PLACEHOLDER"""
+        """
+        Returns color of player's marble.
+        """
         if playername == self._player1_name:
             return self._player1_color
         if playername == self._player2_name:
@@ -91,9 +92,7 @@ class KubaGame:
     def display_board(self):
         """
         Displays board with current marble positions.
-        :return: Print out of current game board.
         """
-
         for i, key in enumerate(self._board):
             print(self._board[key], end=" ")
             if i % 7 == 6:
@@ -101,11 +100,8 @@ class KubaGame:
 
     def display_board_coordinates(self):
         """
-        Displays board with current marble positions.
-        Coordinates are also displayed.
-        :return: Print out of current game board with coordinates.
+        Displays board with coordinates and current marble positions
         """
-
         for item, key in enumerate(self._board):
             print(key, self._board[key], end=" ")
             if item % 7 == 6:
@@ -113,22 +109,18 @@ class KubaGame:
 
     def get_current_turn(self):
         """
-        Returns the player name whose turn it is to play the game.  Returns 'None' if called
-        when no player has made the first move yet.
-        :return: Returns player name or 'None'.
+        Returns the name of the player who has the next turn. Returns 'None' if the first move has yet to be made.
         """
         return self._turn
 
     def make_move(self, playername, coordinates, direction):
         """
-        Used for when a player moves a marble on the board.
-        :param playername: Name of player making the move.
-        :param coordinates: Tuple containing the location of the marble that is being moved.
-        :param direction: Direction in which the player wants to push the marble.
-        :return: Returns 'True' if move is valid, or 'False' if move is invalid.
+        Used for when a player moves a marble on the board.  If move is valid, then board is updated
+        per move and 'True' is returned.  If move is invalid, then move is rejected and 'False' is returned.
+        This method also determines if there is a winner after a valid move is made.
         """
 
-        # Create movement variables for validation checks
+        # Create coordinates variables for validation checks
         directions_dict = {'F': (-1, 0), 'B': (1, 0), 'L': (0, -1), 'R': (0, 1)}
         direction_coordinates = directions_dict[direction]
         new_coordinates = tuple(sum(x) for x in zip(coordinates, direction_coordinates))
@@ -136,73 +128,62 @@ class KubaGame:
         opposite_coordinates = tuple(sum(x) for x in zip(coordinates, opposite_direction))
 
         # -----------------------------------------------------------------
-        # Pre-move validation checks. Built out details further.
+        # Pre-move validation checks.  Checks will set valid_flag to 'False'
+        # if move is invalid.
         # -----------------------------------------------------------------
 
-        # Set valid_flag to True (valid move = True, invalid move = False)
+        # Initially set valid_flag to True (valid move = True, invalid move = False)
         valid_flag = True
 
-        # Set valid_flag to False if game has already been won
+        # Set valid_flag to 'False' if game has already been won
         if self._winner is not None:
             valid_flag = False
 
-        # Set valid_flag to False if playername is not equal to player 1 or player 2
+        # Set valid_flag to 'False' if playername is not equal to player 1 or player 2
         if playername != self._player1_name and playername != self._player2_name:
             valid_flag = False
 
-        # Set valid_flag to False it is not the player's turn
+        # Set valid_flag to 'False' if it is not the player's turn
         if playername != self._turn and self._turn is not None:
             valid_flag = False
 
-        # Set valid_flag to False if marble does not belong to respective player
+        # Set valid_flag to 'False' if marble does not belong to respective player
         if playername == self._player1_name and self._board[coordinates] != self._player1_color:
             valid_flag = False
         if playername == self._player2_name and self._board[coordinates] != self._player2_color:
             valid_flag = False
 
-        # Set valid_flag to False if parameter coordinates do not exist in board
+        # Set valid_flag to 'False' if parameter coordinates do not exist in board
         if coordinates not in self._board:
             valid_flag = False
 
-        # Set valid_flag to False if movement is to coordinates that do not exist in board
+        # Set valid_flag to 'False' if movement is to coordinates that do not exist on board
         if new_coordinates not in self._board:
             valid_flag = False
 
-        # Set valid_flag to False if coordinates opposite the direction of movement is not empty
+        # Set valid_flag to 'False' if coordinates opposite the direction of movement are not empty
         try:
             if self._board[opposite_coordinates] != 'X':
                 valid_flag = False
         except KeyError:
             pass
 
-        # Set valid_flag to False if there are more than 6 adjacent marbles in the direction of movement
-        marble_count = 1
-        for i in range(1, 6):
-            offset_coordinates = tuple(x * y for x, y in zip(direction_coordinates, (i, i)))
-            check_coordinates = tuple(sum(x) for x in zip(coordinates, offset_coordinates))
-            try:
-                if self._board[check_coordinates] == 'X':
-                    break
-                else:
-                    marble_count += 1
-            except KeyError:
-                break
-        if marble_count > 6:
-            valid_flag = False
-
         # return "False" if move does not pass the above validation checks
         if not valid_flag:
             return valid_flag
 
         # -----------------------------------------------------------------
-        # Make move section.  Built out details further.
+        # If move is valid make move and update the board accordingly.
+        # This section also includes additional checks to validate that:
+        # 1) the move does not push the player's own marble off the board
+        # 2) the move does not undo the opponent's previous move.
         # -----------------------------------------------------------------
 
         # create deep copies for validations
         self._previous_board = self._interim_board
         self._interim_board = copy.deepcopy(self._board)
 
-        # FOR TESTING PURPOSES
+        # **** DELETE: FOR TESTING PURPOSES ONLY ****
         print()
         self.display_board()
 
@@ -245,73 +226,74 @@ class KubaGame:
                 captured_marble = next_marble
                 next_marble = None
 
-        # Set valid_flag to False and reject move if move results in player's marble getting pushed off the board
+        # Set valid_flag to False and reject move if move results in player's own marble getting pushed off the board
         if captured_marble == self.get_player_color(playername):
             valid_flag = False
-            # self._board = copy.deepcopy(self._previous_board)
             self._board = copy.deepcopy(self._interim_board)
-            # return valid_flag
 
         # Set valid_flag to False and reject move if move undoes opponent's move
         if self._board == self._previous_board:
             self._board = copy.deepcopy(self._interim_board)
             valid_flag = False
 
+        if not valid_flag:
+            return valid_flag
+
         # -----------------------------------------------------------------
-        # Successful move section.  Built out details further.
+        # After successful move:
+        # 1) update player score if any red marbles are captured
+        # 2) determine if player has won
+        # 3) return 'True'
         # -----------------------------------------------------------------
 
-        # if move is valid, make move and return True
+        # if marble is red then add 1 point to player's captured_marble
+        if playername == self._player1_name and captured_marble == 'R':
+            self._player1_captured += 1
+        if playername == self._player2_name and captured_marble == 'R':
+            self._player2_captured += 1
 
-        # after move, determine if game has been won
-        # 1) if a player cannot make any moves
-        # 1b) if a player cannot make any more valid moves
+        # if player has 7 red marbles then mark player as winner
+        if self._player1_captured == 7:
+            self._winner = playername
+        if self._player2_captured == 7:
+            self._winner = playername
 
-        if valid_flag is True:
+        # if the opponent has no more marbles then mark player as winner
+        if self._player1_color not in self._board.values():
+            self._winner = playername
+        if self._player2_color not in self._board.values():
+            self._winner = playername
 
-            # if marble is red then add 1 point to player's captured_marble
-            if playername == self._player1_name and captured_marble == 'R':
-                self._player1_captured += 1
-            if playername == self._player2_name and captured_marble == 'R':
-                self._player2_captured += 1
+        # if the opponent's marbles are surrounded and cannot move in any direction then player wins
+        # set player available_moves counters to 0
+        player1_available_moves = 0
+        player2_available_moves = 0
 
-            # if player has 7 red marbles then mark player as winner
-            if self._player1_captured == 7:
-                self._winner = playername
-            if self._player2_captured == 7:
-                self._winner = playername
+        for key_coordinates in self._board:
+            for dict_coordinates in directions_dict.values():
 
-            # if the opponent has no more marbles then mark player as winner
-            if self._player1_color not in self._board.values():
-                self._winner = playername
-            if self._player2_color not in self._board.values():
-                self._winner = playername
+                if self._board[key_coordinates] == self._player1_color:
+                    try:
+                        adjacent_coordinates = tuple(sum(x) for x in zip(key_coordinates, dict_coordinates))
+                        if self._board[adjacent_coordinates] == 'X':
+                            player1_available_moves += 1
+                    except KeyError:
+                        player1_available_moves += 1
 
-            # NOTE - PUT TEMPORARY SOLUTION IN FOR NOW AND FIX IF YOU HAVE TIME
-            # if the opponent has no more empty spaces around their remaining marbles then mark player as winner
-            # set available_moves counters to 0
-            white_available_moves = 0
-            black_available_moves = 0
+                if self._board[key_coordinates] == self._player2_color:
 
-            for key_coordinates in self._board:
-                for dict_coordinates in directions_dict.values():
+                    try:
+                        adjacent_coordinates = tuple(sum(x) for x in zip(key_coordinates, dict_coordinates))
+                        if self._board[adjacent_coordinates] == 'X':
+                            player2_available_moves += 1
+                    except KeyError:
+                        player2_available_moves += 1
 
-                    if self._board[key_coordinates] == 'W':
-                        # is there a case where the adjacent coordinate value is 'X' or None, but player can't move?
-                        # 1) more than 6 marbles and flanked by marbles
-                        try:
-                            adjacent_coordinates = tuple(sum(x) for x in zip(key_coordinates, dict_coordinates))
-                            if self._board[adjacent_coordinates] == 'X':
-                                white_available_moves += 1
-                        except KeyError:
-                            white_available_moves += 1
-
-            print("White available moves: ", white_available_moves)
-            print("Black available moves: ", black_available_moves)
-            # if the opponent has no more moves them mark player as winner
-            # 1) opponent has one move but that move undoes player's move
-
-            # 3)
+        # if a given player has no available moves then set opposing player as winner
+        if player1_available_moves == 0:
+            self._winner = self._player2_name
+        if player2_available_moves == 0:
+            self._winner = self._player1_color
 
         # FOR TESTING PURPOSES
         print()
@@ -323,22 +305,22 @@ class KubaGame:
         print("Current marble: ", current_marble)
         print("Next coordinates: ", next_coordinates)
         print("Next marble: ", next_marble)
-        print("Captured marble: ", captured_marble)
+        print("Player 1 captured marbles: ", self._player1_captured)
+        print("Player 2 captured marbles: ", self._player2_captured)
+        print("Player 1 available moves: ", player1_available_moves)
+        print("Player 2 available moves: ", player2_available_moves)
 
         return valid_flag
 
     def get_winner(self):
         """
         Returns the name of the winning player.
-        :return: Returns winning player name, or 'None' if no player has won yet.
         """
         return self._winner
 
     def get_captured(self, playername):
         """
-        Returns the number of Red marbles captured by the player
-        :param playername: Name of player.
-        :return: Number of red marbles captured by the player.  Returns 0 if no marble is captured.
+        Returns the number of Red marbles captured by the player.
         """
         if playername == self._player1_name:
             return self._player1_captured
@@ -349,10 +331,7 @@ class KubaGame:
 
     def get_marble(self, coordinates):
         """
-        Returns the marble at a given set of coordinates.
-        :param coordinates: Tuple containing location coordinates.
-        :return: Returns the marble that is present at the location provided.  If no marble
-        is present at the coordinate then return 'X'.
+        Returns the marble at a given set of coordinates.  Returns 'X' if no marble is present at the coordinates.
         """
         try:
             return self._board[coordinates]
@@ -361,8 +340,7 @@ class KubaGame:
 
     def get_marble_count(self):
         """
-        Returns the number of White, Black, and Red marbles.
-        :return: Returns the number of White, Black, and Red marbles as a tuple in the order (W,B,R)
+        Returns a tuple with the number of White, Black, and Red marbles.
         """
         W = 0
         B = 0
@@ -377,7 +355,6 @@ class KubaGame:
                 R += 1
 
         marble_count = (W, B, R)
-
         return marble_count
 
 
@@ -391,6 +368,7 @@ if __name__ == '__main__':
     # need to test:
     # 1) if opponent has no more marbles then player is winner
     # 2) if player has 7 red marbles then player is winner
+    # 3) if the opponent's marbles are surrounded and cannot move in any direction then player wins
 
     # # tests if player can capture a red marble
     # print(game.make_move('Chim', (0, 1), 'B'))

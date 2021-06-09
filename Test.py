@@ -55,3 +55,19 @@
 #     print(i)
 #     if i == 3:
 #         break
+
+# # IS THIS SECTION EVEN NEEDED?!?!?
+# # Set valid_flag to False if there are more than 6 adjacent marbles in the direction of movement
+# marble_count = 1
+# for i in range(1, 6):
+#     offset_coordinates = tuple(x * y for x, y in zip(direction_coordinates, (i, i)))
+#     check_coordinates = tuple(sum(x) for x in zip(coordinates, offset_coordinates))
+#     try:
+#         if self._board[check_coordinates] == 'X':
+#             break
+#         else:
+#             marble_count += 1
+#     except KeyError:
+#         break
+# if marble_count > 6:
+#     valid_flag = False
